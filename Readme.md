@@ -1,4 +1,4 @@
-# ✈️ Booking System API
+# Booking System API
 
 A production-ready REST API for hotel and flight bookings built with **FastAPI**, **PostgreSQL**, **Redis**, and **JWT Authentication**.
 
@@ -194,4 +194,4 @@ curl -X POST http://127.0.0.1:8000/api/v1/tasks/ \
 
 ## 👨‍💻 Author
 
-**Prince** 
+**Prince Kushwaha** 
