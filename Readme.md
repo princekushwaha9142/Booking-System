@@ -37,99 +37,55 @@ A production-ready REST API for hotel and flight bookings built with FastAPI, Po
 
 ## 📁 Project Structure
 
+```
 Booking-System/
-
 ├── main.py
-
 ├── requirements.txt
-
 ├── pytest.ini
-
 ├── alembic.ini
-
 ├── render.yaml
-
 ├── Dockerfile
-
 ├── docker-compose.yml
-
 ├── .env.example
-
 ├── .gitignore
-
 ├── alembic/
-
 │   ├── env.py
-
 │   └── versions/
-
 ├── app/
-
 │   ├── core/
-
-│   │   ├── config.py        # App settings from .env
-
-│   │   ├── database.py      # Async SQLAlchemy engine
-
-│   │   ├── security.py      # JWT + bcrypt
-
-│   │   └── limiter.py       # SlowAPI rate limiter
-
+│   │   ├── config.py
+│   │   ├── database.py
+│   │   ├── security.py
+│   │   └── limiter.py
 │   ├── models/
-
-│   │   ├── user.py          # User table
-
-│   │   ├── booking.py       # Bookings table
-
-│   │   └── task.py          # Tasks table
-
+│   │   ├── user.py
+│   │   ├── booking.py
+│   │   └── task.py
 │   ├── schemas/
-
-│   │   ├── user.py          # User Pydantic schemas
-
-│   │   ├── booking.py       # Booking schemas
-
-│   │   └── task.py          # Task schemas
-
+│   │   ├── user.py
+│   │   ├── booking.py
+│   │   └── task.py
 │   ├── routers/
-
-│   │   ├── auth.py          # Auth routes
-
-│   │   ├── bookings.py      # Booking routes
-
-│   │   └── tasks.py         # Task routes
-
+│   │   ├── auth.py
+│   │   ├── bookings.py
+│   │   └── tasks.py
 │   ├── services/
-
-│   │   ├── auth_service.py     # Auth business logic
-
-│   │   ├── booking_service.py  # Booking logic + Redis cache
-
-│   │   ├── task_service.py     # Task CRUD logic
-
-│   │   ├── cache_service.py    # Redis operations
-
-│   │   └── email_service.py    # Background email notifications
-
-│   └── dependencies.py         # JWT guard (get_current_user)
-
+│   │   ├── auth_service.py
+│   │   ├── booking_service.py
+│   │   ├── task_service.py
+│   │   ├── cache_service.py
+│   │   └── email_service.py
+│   └── dependencies.py
 ├── tests/
-
-│   ├── conftest.py          # Fixtures + test DB setup
-
-│   ├── test_auth.py         # Auth tests
-
-│   ├── test_bookings.py     # Booking tests
-
-│   └── test_tasks.py        # Task tests
-
+│   ├── conftest.py
+│   ├── test_auth.py
+│   ├── test_bookings.py
+│   └── test_tasks.py
 └── .github/
-
-└── workflows/
-
-├── ci.yml           # Run tests on every push
-
-└── deploy.yml       # Auto deploy to Render on main
+    └── workflows/
+        ├── ci.yml
+        └── deploy.yml
+```
 ---
 
 ## 🚀 Local Setup (Without Docker)
