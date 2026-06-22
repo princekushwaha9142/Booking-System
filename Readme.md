@@ -264,25 +264,6 @@ Authorization: Bearer <access_token>
 
 ---
 
-## ⚙️ Environment Variables
-
-```env
-APP_NAME=BookingSystem
-APP_VERSION=1.0.0
-DEBUG=False
-SECRET_KEY=your-secret-key-here
-
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-REFRESH_TOKEN_EXPIRE_DAYS=7
-
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5433/booking_db
-REDIS_URL=redis://localhost:6379/0
-CACHE_TTL_SECONDS=300
-```
-
----
-
 ## 🔒 Rate Limiting
 
 | Endpoint | Limit |
