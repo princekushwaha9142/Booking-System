@@ -1,8 +1,9 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.limiter import limiter
 from app.dependencies import get_current_user
 from app.models.user import User
 from app.models.booking import BookingType, BookingStatus
@@ -12,36 +13,61 @@ from app.schemas.booking import (
     HotelSearchParams, FlightSearchParams,
 )
 from app.services import booking_service
+from app.services.email_service import notify_booking_confirmed, notify_booking_cancelled
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
 
 @router.post("/search/hotels")
-async def search_hotels(params: HotelSearchParams):
+@limiter.limit("30/minute")
+async def search_hotels(request: Request, params: HotelSearchParams):
     return await booking_service.search_hotels(params)
 
 
 @router.post("/search/flights")
-async def search_flights(params: FlightSearchParams):
+@limiter.limit("30/minute")
+async def search_flights(request: Request, params: FlightSearchParams):
     return await booking_service.search_flights(params)
 
 
 @router.post("/hotels", response_model=BookingResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("20/minute")
 async def book_hotel(
+    request: Request,
     data: HotelBookingCreate,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await booking_service.create_hotel_booking(db, current_user.id, data)
+    booking = await booking_service.create_hotel_booking(db, current_user.id, data)
+    notify_booking_confirmed(
+        background_tasks,
+        email=current_user.email,
+        name=current_user.full_name or current_user.username,
+        reference=booking.reference_number,
+        title=booking.title,
+    )
+    return booking
 
 
 @router.post("/flights", response_model=BookingResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("20/minute")
 async def book_flight(
+    request: Request,
     data: FlightBookingCreate,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await booking_service.create_flight_booking(db, current_user.id, data)
+    booking = await booking_service.create_flight_booking(db, current_user.id, data)
+    notify_booking_confirmed(
+        background_tasks,
+        email=current_user.email,
+        name=current_user.full_name or current_user.username,
+        reference=booking.reference_number,
+        title=booking.title,
+    )
+    return booking
 
 
 @router.get("/", response_model=BookingListResponse)
@@ -83,7 +109,16 @@ async def update_booking(
 @router.delete("/{booking_id}", response_model=BookingResponse)
 async def cancel_booking(
     booking_id: int,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await booking_service.cancel_booking(db, booking_id, current_user.id)
+    booking = await booking_service.cancel_booking(db, booking_id, current_user.id)
+    notify_booking_cancelled(
+        background_tasks,
+        email=current_user.email,
+        name=current_user.full_name or current_user.username,
+        reference=booking.reference_number,
+        title=booking.title,
+    )
+    return booking
