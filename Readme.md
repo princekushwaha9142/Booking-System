@@ -1,4 +1,4 @@
-# ✈️ Booking System API
+# Booking System API
 
 ![CI](https://github.com/princekushwaha9142/Booking-System/actions/workflows/ci.yml/badge.svg)
 ![Deploy](https://github.com/princekushwaha9142/Booking-System/actions/workflows/deploy.yml/badge.svg)
@@ -11,6 +11,9 @@
 ![Pytest](https://img.shields.io/badge/Tests-12%2F12%20Passed-brightgreen?logo=pytest)
 ![JWT](https://img.shields.io/badge/Auth-JWT-orange?logo=jsonwebtokens)
 ![License](https://img.shields.io/badge/License-MIT-green)
+
+🌐 **Live API:** https://booking-system-skjo.onrender.com
+📖 **Docs:** https://booking-system-skjo.onrender.com/docs
 
 A production-ready REST API for hotel and flight bookings built with FastAPI, PostgreSQL, Redis, and JWT Authentication.
 
@@ -88,7 +91,7 @@ Booking-System/
 ```
 ---
 
-## 🚀 Local Setup (Without Docker)
+## Local Setup (Without Docker)
 
 ```bash
 # 1. Clone the repository
@@ -127,7 +130,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-One command starts API + PostgreSQL + Redis together! ✅
+One command starts API + PostgreSQL + Redis together! 
 
 ```bash
 # Run in background
@@ -178,7 +181,7 @@ pytest tests/ -v
 
 ---
 
-## 🔑 Authentication Flow
+## Authentication Flow
 
 POST /api/v1/auth/register   → Create account        [5 req/min]
 
@@ -220,7 +223,7 @@ Authorization: Bearer <access_token>
 
 ---
 
-## 🔒 Rate Limiting
+## Rate Limiting
 
 | Endpoint | Limit |
 |----------|-------|
@@ -256,7 +259,7 @@ Auto-deploy triggers on every push to `main` branch via GitHub Actions. 🚀
 
 ---
 
-## 🧠 Key Design Decisions
+## Key Design Decisions
 
 **Redis Caching Strategy**
 - Search results cached for 5–10 minutes
