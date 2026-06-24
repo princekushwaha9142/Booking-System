@@ -3,7 +3,7 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    APP_NAME: str = "BookingSystem"
+    APP_NAME: str = "Booking System"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
 
@@ -12,10 +12,14 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:password@localhost:5432/booking_db"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5433/booking_db"
 
     REDIS_URL: str = "redis://localhost:6379/0"
     CACHE_TTL_SECONDS: int = 300
+
+    # Email
+    RESEND_API_KEY: str = ""
+    FROM_EMAIL: str = "onboarding@resend.dev"
 
     class Config:
         env_file = ".env"

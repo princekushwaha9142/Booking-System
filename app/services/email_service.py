@@ -1,17 +1,27 @@
 import logging
 from fastapi import BackgroundTasks
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 
 async def send_email(to_email: str, subject: str, body: str):
-    """Abhi logs mein print karta hai. Production mein SMTP se replace karo."""
-    logger.info("=" * 50)
-    logger.info("📧 EMAIL NOTIFICATION")
-    logger.info("To:      %s", to_email)
-    logger.info("Subject: %s", subject)
-    logger.info("Body:\n%s", body.strip())
-    logger.info("=" * 50)
+    if settings.RESEND_API_KEY:
+        try:
+            import resend
+            resend.api_key = settings.RESEND_API_KEY
+            params: resend.Emails.SendParams = {
+                "from": settings.FROM_EMAIL,
+                "to": [to_email],
+                "subject": subject,
+                "text": body,
+            }
+            resend.Emails.send(params)
+            logger.info("✅ Email sent to %s", to_email)
+        except Exception as e:
+            logger.error("❌ Email failed: %s", e)
+    else:
+        logger.info("📧 EMAIL | To: %s | Subject: %s", to_email, subject)
 
 
 def notify_booking_confirmed(
