@@ -10,9 +10,10 @@
 ![Alembic](https://img.shields.io/badge/Alembic-1.13.1-blue)
 ![Pytest](https://img.shields.io/badge/Tests-12%2F12%20Passed-brightgreen?logo=pytest)
 ![JWT](https://img.shields.io/badge/Auth-JWT-orange?logo=jsonwebtokens)
+![Resend](https://img.shields.io/badge/Email-Resend-000000?logo=mail)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-🌐 **Live API:** https://booking-system-skjo.onrender.com
+🌐 **Live API:** https://booking-system-skjo.onrender.com  
 📖 **Docs:** https://booking-system-skjo.onrender.com/docs
 
 A production-ready REST API for hotel and flight bookings built with FastAPI, PostgreSQL, Redis, and JWT Authentication.
@@ -30,7 +31,7 @@ A production-ready REST API for hotel and flight bookings built with FastAPI, Po
 | **Redis** | 7 | Caching |
 | **JWT** | — | Authentication |
 | **SlowAPI** | 0.1.9 | Rate limiting |
-| **BackgroundTasks** | — | Email notifications |
+| **Resend** | 2.2.0 | Email notifications |
 | **Pytest** | 8.2.0 | Testing |
 | **Docker** | — | Containerization |
 | **GitHub Actions** | — | CI/CD |
@@ -89,9 +90,25 @@ Booking-System/
         ├── ci.yml
         └── deploy.yml
 ```
+
 ---
 
-## Local Setup (Without Docker)
+## 💡 Why Booking Tasks?
+
+Tasks in this system are **not generic todos** — they are travel workflow items that track a user's booking journey end-to-end:
+
+| Task Example | Category | Status Flow |
+|-------------|----------|-------------|
+| "Book Flight to Paris" | travel | pending → booked |
+| "Arrange Airport Transfer" | travel | pending → booked |
+| "Prepare Business Docs" | business | pending → booked |
+| "Hotel Check-in Reminder" | leisure | pending → booked |
+
+Tasks allow users to plan and track everything related to their trip — from pre-booking research to post-booking actions — all in one place.
+
+---
+
+## 🚀 Local Setup (Without Docker)
 
 ```bash
 # 1. Clone the repository
@@ -107,7 +124,7 @@ pip install -r requirements.txt
 
 # 4. Setup environment variables
 cp .env.example .env
-# Edit .env with your DATABASE_URL and REDIS_URL
+# Edit .env with your DATABASE_URL, REDIS_URL and RESEND_API_KEY
 
 # 5. Create the database
 psql -U postgres -c "CREATE DATABASE booking_db;"
@@ -181,18 +198,33 @@ pytest tests/ -v
 
 ---
 
+## ⚡ Performance Metrics
+
+| Metric | Value |
+|--------|-------|
+| Search response (uncached) | ~445ms |
+| Search response (cached) | ~335ms |
+| Cache improvement | ~25% faster |
+| Test coverage | 12/12 (100%) |
+| Auth rate limit | 5–10 req/min |
+| Search rate limit | 30 req/min |
+| Booking rate limit | 20 req/min |
+
+---
+
 ## Authentication Flow
 
+```
 POST /api/v1/auth/register   → Create account        [5 req/min]
-
 POST /api/v1/auth/login      → Get JWT tokens         [10 req/min]
-
 POST /api/v1/auth/refresh    → Refresh access token   [10 req/min]
-
 GET  /api/v1/auth/me         → Get current user
+```
 
 All protected routes require:
+```
 Authorization: Bearer <access_token>
+```
 
 ---
 
@@ -211,7 +243,7 @@ Authorization: Bearer <access_token>
 | PATCH | `/api/v1/bookings/{id}` | ✅ | — |
 | DELETE | `/api/v1/bookings/{id}` | ✅ | — |
 
-### ✅ Tasks
+### ✅ Booking Tasks
 
 | Method | Endpoint | Auth | Rate Limit |
 |--------|----------|------|------------|
@@ -236,18 +268,19 @@ Authorization: Bearer <access_token>
 
 ---
 
-## 📧 Background Email Notifications
+## 📧 Email Notifications (Resend)
 
-Email notifications are sent automatically in the background for:
-- ✅ Booking confirmed
-- ❌ Booking cancelled
-- 📝 New task created
+Real emails sent automatically via **Resend** in the background:
 
-> Currently logs to console. Replace with SMTP/SendGrid in production.
+- ✅ Booking confirmed → confirmation email
+- ❌ Booking cancelled → cancellation email
+- 📝 New task created → task notification email
+
+Set `RESEND_API_KEY` in environment variables to enable.
 
 ---
 
-## ☁️ Deploy to Render
+## Deploy to Render
 
 1. Push code to GitHub (with `render.yaml`)
 2. Go to [render.com](https://render.com) → **New** → **Blueprint**
@@ -278,10 +311,31 @@ Auto-deploy triggers on every push to `main` branch via GitHub Actions. 🚀
 
 ---
 
+## ⚙️ Environment Variables
+
+```env
+APP_NAME=Booking System
+APP_VERSION=1.0.0
+DEBUG=False
+SECRET_KEY=your-secret-key
+
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=7
+
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5433/booking_db
+REDIS_URL=redis://localhost:6379/0
+CACHE_TTL_SECONDS=300
+
+RESEND_API_KEY=re_xxxxxxxxxxxx
+FROM_EMAIL=onboarding@resend.dev
+```
+
+---
+
 ## 👨‍💻 Author
 
-**Prince Kushwaha**
-
+**Prince Kushwaha**  
 GitHub: [@princekushwaha9142](https://github.com/princekushwaha9142)
 
 ---
