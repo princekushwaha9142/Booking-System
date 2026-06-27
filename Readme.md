@@ -6,6 +6,7 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.111.0-009688?logo=fastapi)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)
 ![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis)
+![Celery](https://img.shields.io/badge/Celery-5.3.6-37814A?logo=celery)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)
 ![Alembic](https://img.shields.io/badge/Alembic-1.13.1-blue)
 ![Pytest](https://img.shields.io/badge/Tests-12%2F12%20Passed-brightgreen?logo=pytest)
@@ -16,7 +17,7 @@
 🌐 **Live API:** https://booking-system-skjo.onrender.com  
 📖 **Docs:** https://booking-system-skjo.onrender.com/docs
 
-A production-ready REST API for hotel and flight bookings built with FastAPI, PostgreSQL, Redis, and JWT Authentication.
+A production-ready REST API for hotel and flight bookings built with FastAPI, PostgreSQL, Redis, Celery, and JWT Authentication.
 
 ---
 
@@ -28,7 +29,9 @@ A production-ready REST API for hotel and flight bookings built with FastAPI, Po
 | **PostgreSQL** | 16 | Main database |
 | **SQLAlchemy** | 2.0.30 | Async ORM |
 | **Alembic** | 1.13.1 | Database migrations |
-| **Redis** | 7 | Caching |
+| **Redis** | 7 | Caching + Message broker |
+| **Celery** | 5.3.6 | Background task queue |
+| **Flower** | 2.0.1 | Task monitoring |
 | **JWT** | — | Authentication |
 | **SlowAPI** | 0.1.9 | Rate limiting |
 | **Resend** | 2.2.0 | Email notifications |
@@ -60,7 +63,8 @@ Booking-System/
 │   │   ├── config.py
 │   │   ├── database.py
 │   │   ├── security.py
-│   │   └── limiter.py
+│   │   ├── limiter.py
+│   │   └── celery_app.py
 │   ├── models/
 │   │   ├── user.py
 │   │   ├── booking.py
@@ -73,6 +77,8 @@ Booking-System/
 │   │   ├── auth.py
 │   │   ├── bookings.py
 │   │   └── tasks.py
+│   ├── tasks/
+│   │   └── email_tasks.py
 │   ├── services/
 │   │   ├── auth_service.py
 │   │   ├── booking_service.py
@@ -93,7 +99,7 @@ Booking-System/
 
 ---
 
-## 💡 Why Booking Tasks?
+## Why Booking Tasks?
 
 Tasks in this system are **not generic todos** — they are travel workflow items that track a user's booking journey end-to-end:
 
@@ -108,7 +114,7 @@ Tasks allow users to plan and track everything related to their trip — from pr
 
 ---
 
-## 🚀 Local Setup (Without Docker)
+## Local Setup (Without Docker)
 
 ```bash
 # 1. Clone the repository
@@ -132,11 +138,20 @@ psql -U postgres -c "CREATE DATABASE booking_db;"
 # 6. Run migrations
 alembic upgrade head
 
-# 7. Start the server
+# 7. Start all services (3 terminals)
+
+# Terminal 1 — API server
 uvicorn main:app --reload
+
+# Terminal 2 — Celery worker
+celery -A app.core.celery_app worker --loglevel=info
+
+# Terminal 3 — Flower monitor (optional)
+celery -A app.core.celery_app flower --port=5555
 ```
 
-Visit **http://127.0.0.1:8000/docs** for Swagger UI.
+Visit **http://127.0.0.1:8000/docs** for Swagger UI.  
+Visit **http://127.0.0.1:5555** for Flower task monitor.
 
 ---
 
@@ -159,7 +174,7 @@ docker compose down
 
 ---
 
-## 🗄️ Database Migrations (Alembic)
+## Database Migrations (Alembic)
 
 ```bash
 # Create a new migration after model changes
@@ -177,7 +192,7 @@ alembic history
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Create test database
@@ -228,9 +243,9 @@ Authorization: Bearer <access_token>
 
 ---
 
-## 📋 API Endpoints
+## API Endpoints
 
-### 🏨 Bookings
+### Bookings
 
 | Method | Endpoint | Auth | Rate Limit |
 |--------|----------|------|------------|
@@ -268,19 +283,28 @@ Authorization: Bearer <access_token>
 
 ---
 
-## 📧 Email Notifications (Resend)
+## 📧 Email Notifications (Celery + Resend)
 
-Real emails sent automatically via **Resend** in the background:
+Real emails sent via **Resend** through **Celery task queue**:
 
 - ✅ Booking confirmed → confirmation email
 - ❌ Booking cancelled → cancellation email
 - 📝 New task created → task notification email
 
+**How it works:**
+```
+FastAPI → Redis Queue (DB 1) → Celery Worker → Resend API → Email
+```
+
+- Auto-retry on failure (3 retries, 60s delay)
+- Tasks persist even if server crashes
+- Monitor tasks via Flower dashboard at `http://localhost:5555`
+
 Set `RESEND_API_KEY` in environment variables to enable.
 
 ---
 
-## Deploy to Render
+## ☁️ Deploy to Render
 
 1. Push code to GitHub (with `render.yaml`)
 2. Go to [render.com](https://render.com) → **New** → **Blueprint**
@@ -293,6 +317,11 @@ Auto-deploy triggers on every push to `main` branch via GitHub Actions. 🚀
 ---
 
 ## Key Design Decisions
+
+**Redis — 3 Databases:**
+- `DB 0` → API caching (search results, bookings lists)
+- `DB 1` → Celery broker (task queue)
+- `DB 2` → Celery results (task status)
 
 **Redis Caching Strategy**
 - Search results cached for 5–10 minutes
@@ -309,6 +338,11 @@ Auto-deploy triggers on every push to `main` branch via GitHub Actions. 🚀
 - Uses `asyncpg` + SQLAlchemy async
 - Redis via `redis.asyncio` — no thread blocking
 
+**Celery + Redis (Message Broker)**
+- Background tasks offloaded to Celery workers
+- Redis as broker — same instance, different DB
+- Retry logic built-in — tasks never lost on crash
+
 ---
 
 ## ⚙️ Environment Variables
@@ -324,8 +358,11 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 REFRESH_TOKEN_EXPIRE_DAYS=7
 
 DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5433/booking_db
+
 REDIS_URL=redis://localhost:6379/0
 CACHE_TTL_SECONDS=300
+CELERY_BROKER_URL=redis://localhost:6379/1
+CELERY_RESULT_BACKEND=redis://localhost:6379/2
 
 RESEND_API_KEY=re_xxxxxxxxxxxx
 FROM_EMAIL=onboarding@resend.dev
