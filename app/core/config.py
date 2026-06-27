@@ -14,8 +14,14 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5433/booking_db"
 
+    # Redis DB 0 → Caching
     REDIS_URL: str = "redis://localhost:6379/0"
     CACHE_TTL_SECONDS: int = 300
+
+    # Redis DB 1 → Celery Broker
+    # Redis DB 2 → Celery Results
+    CELERY_BROKER_URL: str = "redis://localhost:6379/1"
+    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/2"
 
     # Email
     RESEND_API_KEY: str = ""
