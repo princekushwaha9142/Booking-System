@@ -9,7 +9,7 @@
 ![Celery](https://img.shields.io/badge/Celery-5.3.6-37814A?logo=celery)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)
 ![Alembic](https://img.shields.io/badge/Alembic-1.13.1-blue)
-![Pytest](https://img.shields.io/badge/Tests-12%2F12%20Passed-brightgreen?logo=pytest)
+![Pytest](https://img.shields.io/badge/Tests-27%2F27%20Passed-brightgreen?logo=pytest)
 ![JWT](https://img.shields.io/badge/Auth-JWT-orange?logo=jsonwebtokens)
 ![Resend](https://img.shields.io/badge/Email-Resend-000000?logo=mail)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -18,6 +18,18 @@
 📖 **Docs:** https://booking-system-skjo.onrender.com/docs
 
 A production-ready REST API for hotel and flight bookings built with FastAPI, PostgreSQL, Redis, Celery, and JWT Authentication.
+
+---
+
+## 🎯 Problem Statement
+
+Travel booking is fragmented — users juggle multiple platforms to search hotels, book flights, and track their travel plans. This API solves that by providing a **unified backend** for:
+
+- Searching and booking hotels & flights in one place
+- Managing the full booking lifecycle (create → confirm → cancel)
+- Tracking travel tasks and reminders tied to bookings
+- Secure multi-user access with JWT authentication
+- Fast responses via Redis caching with automatic invalidation
 
 ---
 
@@ -99,7 +111,7 @@ Booking-System/
 
 ---
 
-## Why Booking Tasks?
+## 💡 Why Booking Tasks?
 
 Tasks in this system are **not generic todos** — they are travel workflow items that track a user's booking journey end-to-end:
 
@@ -114,7 +126,7 @@ Tasks allow users to plan and track everything related to their trip — from pr
 
 ---
 
-## Local Setup (Without Docker)
+## 🚀 Local Setup (Without Docker)
 
 ```bash
 # 1. Clone the repository
@@ -162,7 +174,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-One command starts API + PostgreSQL + Redis together! 
+One command starts API + PostgreSQL + Redis together! ✅
 
 ```bash
 # Run in background
@@ -174,7 +186,7 @@ docker compose down
 
 ---
 
-## Database Migrations (Alembic)
+## 🗄️ Database Migrations (Alembic)
 
 ```bash
 # Create a new migration after model changes
@@ -192,7 +204,7 @@ alembic history
 
 ---
 
-## Testing
+## 🧪 Testing
 
 ```bash
 # Create test database
@@ -202,14 +214,14 @@ psql -U postgres -c "CREATE DATABASE booking_test;"
 pytest tests/ -v
 ```
 
-**Result: 12/12 Passed ✅**
+**Result: 27/27 Passed ✅**
 
 | Test File | Tests | Status |
 |-----------|-------|--------|
-| `test_auth.py` | 5 | ✅ Passed |
-| `test_bookings.py` | 4 | ✅ Passed |
-| `test_tasks.py` | 3 | ✅ Passed |
-| **Total** | **12** | **✅ 12/12** |
+| `test_auth.py` | 8 | ✅ Passed |
+| `test_bookings.py` | 10 | ✅ Passed |
+| `test_tasks.py` | 9 | ✅ Passed |
+| **Total** | **27** | **✅ 27/27** |
 
 ---
 
@@ -218,16 +230,19 @@ pytest tests/ -v
 | Metric | Value |
 |--------|-------|
 | Search response (uncached) | ~445ms |
-| Search response (cached) | ~335ms |
+| Search response (Redis cached) | ~335ms |
 | Cache improvement | ~25% faster |
-| Test coverage | 12/12 (100%) |
+| Celery email delivery | async, non-blocking |
+| Email retry on failure | 3 retries, 60s delay |
+| Test coverage | 27/27 (100%) |
 | Auth rate limit | 5–10 req/min |
 | Search rate limit | 30 req/min |
 | Booking rate limit | 20 req/min |
+| Redis databases used | 3 (cache, broker, results) |
 
 ---
 
-## Authentication Flow
+## 🔑 Authentication Flow
 
 ```
 POST /api/v1/auth/register   → Create account        [5 req/min]
@@ -243,9 +258,9 @@ Authorization: Bearer <access_token>
 
 ---
 
-## API Endpoints
+## 📋 API Endpoints
 
-### Bookings
+### 🏨 Bookings
 
 | Method | Endpoint | Auth | Rate Limit |
 |--------|----------|------|------------|
@@ -270,7 +285,7 @@ Authorization: Bearer <access_token>
 
 ---
 
-## Rate Limiting
+## 🔒 Rate Limiting
 
 | Endpoint | Limit |
 |----------|-------|
@@ -316,7 +331,7 @@ Auto-deploy triggers on every push to `main` branch via GitHub Actions. 🚀
 
 ---
 
-## Key Design Decisions
+## 🧠 Key Design Decisions
 
 **Redis — 3 Databases:**
 - `DB 0` → API caching (search results, bookings lists)
