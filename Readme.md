@@ -352,7 +352,7 @@ Auto-deploy triggers on every push to `main` branch via GitHub Actions. 🚀
 - Fully async: router → service → database
 - Uses `asyncpg` + SQLAlchemy async
 - Redis via `redis.asyncio` — no thread blocking
-
+git commit -m "docs: add problem statement, update 27/27 tests, improve metrics"
 **Celery + Redis (Message Broker)**
 - Background tasks offloaded to Celery workers
 - Redis as broker — same instance, different DB
